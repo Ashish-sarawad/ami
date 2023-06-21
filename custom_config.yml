@@ -1,0 +1,82 @@
+global:
+  gitaly:
+    enabled: false
+    authToken:
+      secret: external-gitaly-token
+      key: token
+    external:
+      - name: default
+        hostname: gitlab-ami-int-bcfb74c9686d78fd.elb.ap-south-1.amazonaws.com
+        port: 2305
+    tls:
+      enabled: false
+
+  gitlab:
+    psql:
+      connectTimeout:
+      keepalives:
+      keepalivesIdle:
+      keepalivesInterval:
+      keepalivesCount:
+      tcpUserTimeout:
+      password:
+        useSecret: true
+        secret: gitlab-postgres-password
+        key: password
+      host: gitlab-ami-rds.ccjn6dcqn6cu.ap-south-1.rds.amazonaws.com
+      port: 5432
+      username: gitlab
+      database: gitlabhq_production
+
+    redis:
+      host: master.gitlab-ami-redis.9idt3g.aps1.cache.amazonaws.com
+      password:
+        enabled: true
+        secret: gitlab-redis-password
+        key: password
+      port: 6379
+      scheme: rediss
+
+  webservice:
+    extraEnv:
+      GEO_SECONDARY_PROXY: "0"
+    maxReplicas: 5
+    minReplicas: 2
+    hpa:
+      cpu:
+        targetAverageValue: 1600m
+    resources:
+      limits:
+        memory: "4G"
+      requests:
+        cpu: "500m"
+        memory: "2G"
+    workerProcesses: "2"
+    ingress:
+      proxyBodySize: 0
+    nodeSelector:
+      workload: webservice    # Add this line
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+
+
+  sidekiq:
+    extraEnv:
+      GEO_SECONDARY_PROXY: "0"
+    concurrency: 25
+    resources:
+      limits:
+        cpu: "2000m"
+        memory: "4G"
+      requests:
+        cpu: "1000m"
+        memory: "2G"
+    nodeSelector:
+      workload: sidekiq
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+
